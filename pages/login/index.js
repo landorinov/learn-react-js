@@ -14,7 +14,7 @@ export default function  Login() {
         e.preventDefault();
         setLoading(true)
         const data = {email, password}
-        const host = `http://36.94.216.133:8081/api/login-user`
+        const host = `http://localhost:8081/api/login-user`
         const user = await fetch(host, {
             method: "POST",
             headers: {

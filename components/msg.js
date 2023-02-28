@@ -32,7 +32,7 @@ export const defaultvalue = `<p><span style="font-size:15px;font-family:Arial;co
     </span></p>
     <div style="display: flex;">
 <div class="se-component se-image-container __se__float-left" contenteditable="false">
-        <img src="http://36.94.216.133:8081/api/showFile/tmp/logo_piksi.jpeg" alt="" data-rotate=""
+        <img src="http://localhost:8081/api/showFile/tmp/logo_piksi.jpeg" alt="" data-rotate=""
             data-proportion="true" data-rotatex="" data-rotatey="" data-size="128px,139px" data-align="left"
             data-index="3" data-file-name="logo_piksi.jpeg" data-file-size="0" data-origin=","
             style="width: 128px; height: 139px;">
