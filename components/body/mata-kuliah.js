@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import ReactPaginate from "react-paginate";
 import Modal from "../modal"
 
-export default function User() {
+export default function MataKuliah() {
     const [search, setSearch] = useState("")
     const [limit, setLimit] = useState(10)
     const [page, setPage] = useState(0)
@@ -42,8 +42,8 @@ export default function User() {
     // })
 
     useEffect(() => {
-        getMataKuliahs(),
-            getRegions()
+        getMataKuliahs()
+        // getRegions()
     }, [])
 
     const getMataKuliahs = async (e, i, a) => {
@@ -64,16 +64,16 @@ export default function User() {
             console.log("err")
         }
     }
-    const getRegions = async () => {
-        const host = `${url}/v1/lookup/list?page=0&size=10&type=wilayah_sekolah`
-        const res = await fetch(host, { headers }).catch(err => console.error(err))
-        if (res?.ok) {
-            const newData = await res.json()
-            setRegions(newData.data)
-        } else {
-            console.log("err")
-        }
-    }
+    // const getRegions = async () => {
+    //     const host = `${url}/v1/lookup/list?page=0&size=10&type=wilayah_sekolah`
+    //     const res = await fetch(host, { headers }).catch(err => console.error(err))
+    //     if (res?.ok) {
+    //         const newData = await res.json()
+    //         setRegions(newData.data)
+    //     } else {
+    //         console.log("err")
+    //     }
+    // }
 
     const showAction = (e, i) => {
         setAction(e)
@@ -103,8 +103,8 @@ export default function User() {
             // })
             setVisibleDetail(!visibleDetail)
         } else {
-            setInputs({
-                id: i.id
+            setSelectedDetail({
+                id: i.id,
             })
             setVisibleDelete(!visible)
         }
@@ -129,7 +129,7 @@ export default function User() {
         setVisibleDelete(false)
     }
 
-    const postSchool = async () => {
+    const postMataKuliah = async () => {
         setLoading(true)
         if (inputs.nama === '' || inputs.wilayah === '') {
             const name = ['nama', 'wilayah']
@@ -151,7 +151,7 @@ export default function User() {
                 wilayah: inputs.wilayah,
             }
 
-            const host = `${url}/v1/sosialisasi-sekolah/save-sekolah`
+            const host = `${url}/v1/mata-kuliah/save`
             await fetch(host, {
                 method: "POST",
                 headers: headers,
@@ -179,7 +179,7 @@ export default function User() {
             wilayah: inputs.wilayah,
         }
 
-        const host = `${url}/v1/sosialisasi-sekolah/update-sekolah`
+        const host = `${url}/v1/mata-kuliah/update`
         await fetch(host, {
             method: "PUT",
             headers: headers,
@@ -226,7 +226,7 @@ export default function User() {
 
     const fetchItems = async (currentPage) => {
         const res = await fetch(
-            `${url}/v1/sosialisasi-sekolah/list-sekolah?page=${currentPage - 1}&size=${limit}`,
+            `${url}/v1/mata-kuliah/list?page=${currentPage - 1}&size=${limit}`,
             { headers }
         );
         const data = await res.json();
@@ -332,13 +332,6 @@ export default function User() {
                                 </table>
                             </div>
 
-                            {/* <Paginate
-                            postsPerPage={limit}
-                            totalPosts={totalElements}
-                            paginate={paginate}
-                            currentPage={number}
-                            /> */}
-
                             <ReactPaginate
                                 previousLabel={"previous"}
                                 nextLabel={"next"}
@@ -440,7 +433,7 @@ export default function User() {
                             <span className="ml-2"> Loading...</span>
                         </CButton>
                     ) : (
-                        <CButton color="primary" onClick={() => postSchool()}>Save</CButton>
+                        <CButton color="primary" onClick={() => postMataKuliah()}>Save</CButton>
                     )}
                 </CModalFooter>
             </CModal>
@@ -509,19 +502,19 @@ export default function User() {
                 </CModalHeader>
                 <CModalBody>
                     <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Kode MK : {selectedDetail.kode}</label>
+                        <label htmlFor="nama" className="form-label">Kode MK : {selectedDetail?.kode}</label>
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Nama Mata Kuliah : {selectedDetail.nama}</label>
+                        <label htmlFor="nama" className="form-label">Nama Mata Kuliah : {selectedDetail?.nama}</label>
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Bobot : {selectedDetail.bobotMatkul}</label>
+                        <label htmlFor="nama" className="form-label">Bobot : {selectedDetail?.bobotMatkul}</label>
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Program Studi : {selectedDetail.programStudi.nama}</label>
+                        <label htmlFor="nama" className="form-label">Program Studi : {selectedDetail.programStudi?.nama}</label>
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Jenis Mata Kuliah : {selectedDetail.jenisMatkul.nama}</label>
+                        <label htmlFor="nama" className="form-label">Jenis Mata Kuliah : {selectedDetail.jenisMatkul?.nama}</label>
                     </div>
                 </CModalBody>
                 <CModalFooter>

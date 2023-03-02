@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { headers, url } from "../../lib/auth"
-import { CButton, CModal,CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react'
+import { CButton, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react'
 import { ToastContainer, toast } from 'react-toastify';
 import ReactPaginate from "react-paginate";
 import Modal from "../modal"
 
-export default function User() {
+export default function Kurikulum() {
     const [search, setSearch] = useState("")
     const [limit, setLimit] = useState(10)
     const [page, setPage] = useState(0)
@@ -14,12 +14,13 @@ export default function User() {
     const [numberList, setnumberList] = useState(1);
 
     const [action, setAction] = useState("")
-    const [schools, setSchools] = useState([])
+    const [kurikulums, setKurikulums] = useState([])
     const [regions, setRegions] = useState([])
     const [loading, setLoading] = useState(false)
     const [visible, setVisible] = useState(false)
     const [visibleEdit, setVisibleEdit] = useState(false)
     const [visibleDelete, setVisibleDelete] = useState(false)
+    const [visibleDetail, setVisibleDetail] = useState(false)
 
     const [inputs, setInputs] = useState({
         id: "",
@@ -29,22 +30,31 @@ export default function User() {
     const [errors, setErrors] = useState({
         nama: "",
         wilayah: ""
-    })    
-    
+    })
+
+    const [selectedDetail, setSelectedDetail] = useState({})
+    // const [selectedDetail, setSelectedDetail] = useState({
+    //     kode: "",
+    //     nama: "",
+    //     bobot: "",
+    //     programStudi: "",
+    //     jenisMatkul: ""
+    // })
+
     useEffect(() => {
-        getSchools(),
-        getRegions()
+        getKurikulums()
+        // getRegions()
     }, [])
 
-    const getSchools = async (e, i, a) => {
+    const getKurikulums = async (e, i, a) => {
         const limitData = e;
         const activePage = i;
         const searchData = a;
-        const host = `${url}/v1/sosialisasi-sekolah/list-sekolah?page=${activePage !==undefined ? i: page}&size=${limitData !==undefined ? e: limit}&nama=${searchData !==undefined ? a: search}`
-        const res = await fetch(host, {headers}).catch(err => console.error(err))
+        const host = `${url}/v1/kurikulum/list?page=${activePage !== undefined ? i : page}&size=${limitData !== undefined ? e : limit}&nama=${searchData !== undefined ? a : search}`
+        const res = await fetch(host, { headers }).catch(err => console.error(err))
         if (res?.ok) {
             const newData = await res.json()
-            setSchools(newData.data.content)
+            setKurikulums(newData.data.content)
             setTotalElements(newData.data.totalElements)
 
             const total = newData.data.totalElements;
@@ -54,16 +64,17 @@ export default function User() {
             console.log("err")
         }
     }
-    const getRegions = async () => {
-        const host = `${url}/v1/lookup/list?page=0&size=10&type=wilayah_sekolah`
-        const res = await fetch(host, {headers}).catch(err => console.error(err))
-        if (res?.ok) {
-          const newData = await res.json()
-          setRegions(newData.data)
-        } else {
-          console.log("err")
-        }
-    }
+
+    // const getRegions = async () => {
+    //     const host = `${url}/v1/lookup/list?page=0&size=10&type=wilayah_sekolah`
+    //     const res = await fetch(host, { headers }).catch(err => console.error(err))
+    //     if (res?.ok) {
+    //         const newData = await res.json()
+    //         setRegions(newData.data)
+    //     } else {
+    //         console.log("err")
+    //     }
+    // }
 
     const showAction = (e, i) => {
         setAction(e)
@@ -71,25 +82,33 @@ export default function User() {
             nama: "",
             wilayah: ""
         })
-        if(e == 'add') {
-        setInputs({
-            nama: "",
-            wilayah: ""
-        })
-        setVisible(!visible)
-        }else if(e == 'edit') {
-        setInputs({
-            id: i.id,
-            nama: i.nama,
-            wilayah: i.wilayah
-        })
-        setVisibleEdit(!visible)
-       }else{
-        setInputs({
-            id: i.id
-        })
-        setVisibleDelete(!visible)
-       }
+        if (e == 'add') {
+            setInputs({
+                nama: "",
+                wilayah: ""
+            })
+            setVisible(!visible)
+        } else if (e == 'edit') {
+            setSelectedDetail({
+                id: i.id,
+            })
+            setVisibleEdit(!visible)
+        } else if (e == 'detail') {
+            setSelectedDetail(i)
+            // setSelectedDetail({
+            //     kode: i.kode,
+            //     nama: i.nama,
+            //     bobot: i.bobotMatkul,
+            //     programStudi: i.programStudi.nama,
+            //     jenisMatkul: i.jenisMatkul.nama
+            // })
+            setVisibleDetail(!visibleDetail)
+        } else {
+            setSelectedDetail({
+                id: i.id,
+            })
+            setVisibleDelete(!visible)
+        }
     }
 
     const handleChange = e => {
@@ -100,116 +119,116 @@ export default function User() {
     }
     const handleChangeSearch = e => {
         setSearch(e.target.value)
-        getSchools(undefined, undefined, e.target.value)
+        getKurikulums(undefined, undefined, e.target.value)
     }
     const handleChangeLimit = e => {
         setLimit(e.target.value)
         setPage(0)
-        getSchools(e.target.value, undefined, undefined)
+        getKurikulums(e.target.value, undefined, undefined)
     }
     const handleModal = () => {
         setVisibleDelete(false)
     }
 
-    const postSchool = async () => {
+    const postKurikulum = async () => {
         setLoading(true)
-        if(inputs.nama === '' || inputs.wilayah === '' ){
+        if (inputs.nama === '' || inputs.wilayah === '') {
             const name = ['nama', 'wilayah']
-           if(inputs.nama == '' && inputs.wilayah == '') {
-            for (let i = 0; i < name.length; i++) {
-                setErrors(values => ({ ...values, [name[i]]: "Required" }))
-              }
-            setLoading(false)
-           }else if(inputs.nama == '') {
-            setErrors(values => ({ ...values, nama: "Required" }))
-            setLoading(false)
-           }else{
-            setErrors(values => ({ ...values, wilayah: "Required" }))
-            setLoading(false)
-           }
-        }else{
+            if (inputs.nama == '' && inputs.wilayah == '') {
+                for (let i = 0; i < name.length; i++) {
+                    setErrors(values => ({ ...values, [name[i]]: "Required" }))
+                }
+                setLoading(false)
+            } else if (inputs.nama == '') {
+                setErrors(values => ({ ...values, nama: "Required" }))
+                setLoading(false)
+            } else {
+                setErrors(values => ({ ...values, wilayah: "Required" }))
+                setLoading(false)
+            }
+        } else {
             const dataSchool = {
                 nama: inputs.nama,
                 wilayah: inputs.wilayah,
             }
-              
-            const host = `${url}/v1/sosialisasi-sekolah/save-sekolah`
+
+            const host = `${url}/v1/kurikulum/save`
             await fetch(host, {
                 method: "POST",
                 headers: headers,
                 body: JSON.stringify(dataSchool),
             })
-            .then(res => res.json())
-            .then((data) => {
-                console.log('Success:', data);
-                toast("Successfully added!");
-                getSchools()
-                setLoading(false)
-                setVisible(!visible)
-            })
-            .catch((err) => {
-                console.error('Error:', err);
-                setLoading(false)
-            });
+                .then(res => res.json())
+                .then((data) => {
+                    console.log('Success:', data);
+                    toast("Successfully added!");
+                    getKurikulums()
+                    setLoading(false)
+                    setVisible(!visible)
+                })
+                .catch((err) => {
+                    console.error('Error:', err);
+                    setLoading(false)
+                });
         }
     }
-    const editSchool = async () => {
+    const editKurikulum = async () => {
         setLoading(true)
         const dataSchool = {
             id: inputs.id,
             nama: inputs.nama,
             wilayah: inputs.wilayah,
         }
-          
-        const host = `${url}/v1/sosialisasi-sekolah/update-sekolah`
+
+        const host = `${url}/v1/kurikulum/update`
         await fetch(host, {
             method: "PUT",
             headers: headers,
             body: JSON.stringify(dataSchool),
         })
-        .then(res => res.json())
-        .then((data) => {
-            console.log('Success:', data);
-            toast("Successfully updated!");
-            getSchools()
-            setLoading(false)
-            setVisibleEdit(false)
-        })
-        .catch((err) => {
-            console.error('Error:', err);
-            setLoading(false)
-        });
+            .then(res => res.json())
+            .then((data) => {
+                console.log('Success:', data);
+                toast("Successfully updated!");
+                getKurikulums()
+                setLoading(false)
+                setVisibleEdit(false)
+            })
+            .catch((err) => {
+                console.error('Error:', err);
+                setLoading(false)
+            });
     }
-    const deleteSchool = async () => {
+    const deleteKurikulum = async () => {
         setLoading(true)
-        const dataSchool = {
-            id: inputs.id
+        const dataKuliah = {
+            id: selectedDetail.id
         }
-          
-        const host = `${url}/v1/sosialisasi-sekolah/delete-sekolah`
+
+        const host = `${url}/v1/kurikulum/delete`
         await fetch(host, {
             method: "DELETE",
             headers: headers,
-            body: JSON.stringify(dataSchool),
+            body: JSON.stringify(dataKuliah),
         })
-        .then(res => res.json())
-        .then((data) => {
-            console.log('Success:', data);
-            toast("Successfully deleted!");
-            getSchools()
-            setLoading(false)
-            setVisibleDelete(false)
-        })
-        .catch((err) => {
-            console.error('Error:', err);
-            setLoading(false)
-        });
+            .then(res => res.json())
+            .then((data) => {
+                console.log('Success:', data);
+                toast("Successfully deleted!");
+                getKurikulums()
+                setLoading(false)
+                setVisibleDelete(false)
+            })
+            .catch((err) => {
+                console.error('Error:', err);
+                setLoading(false)
+            });
     }
 
     const fetchItems = async (currentPage) => {
         const res = await fetch(
-        `${url}/v1/sosialisasi-sekolah/list-sekolah?page=${currentPage-1}&size=${limit}`,
-        {headers}
+            `${url}/v1/kurikulum/list?page=${currentPage - 1}&size=${limit}`,
+            { headers }
         );
         const data = await res.json();
         return data.data.content;
@@ -217,10 +236,10 @@ export default function User() {
     const handleClick = async (data) => {
         let currentPage = data.selected + 1;
         const commentsFormServer = await fetchItems(currentPage);
-        setSchools(commentsFormServer);
-        if(currentPage !== 1) {
-            setnumberList(limit*currentPage-limit+1);
-        }else{
+        setKurikulums(commentsFormServer);
+        if (currentPage !== 1) {
+            setnumberList(limit * currentPage - limit + 1);
+        } else {
             setnumberList(1);
         }
     };
@@ -254,7 +273,7 @@ export default function User() {
                                         <option value="500">500</option>
                                     </select>
                                 </div>
-                            
+
                                 <div className="col-auto">
                                     <input
                                         type="text"
@@ -266,49 +285,53 @@ export default function User() {
                                         placeholder="Search"
                                         onChange={handleChangeSearch}
                                     />
-                                </div>    
+                                </div>
                             </div>
 
                             <div className="table-responsive mt-3">
                                 <table className="table table-striped">
                                     <thead>
                                         <tr>
-                                            <th scope="col">#</th>
+                                            <th scope="col">No.</th>
                                             <th scope="col">Nama</th>
-                                            <th scope="col">Kecamatan</th>
+                                            <th scope="col">Program Studi</th>
+                                            <th scope="col">Bobot MK Pilihan</th>
+                                            <th scope="col">Bobot MK Wajib</th>
+                                            <th scope="col">Jumlah SKS</th>
                                             <th scope="col">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {
-                                        schools.map((item, index) => (
-                                        <tr key={index}>
-                                            <th scope="row">{index+numberList}</th>
-                                            <td>{item.nama}</td>
-                                            <td>{item?.wilayah}</td>
-                                            <td>
-                                                <span className="m-2">
-                                                    <button type="button" className="btn btn-sm btn-success" onClick={() => showAction('edit', item)}>
-                                                        <span className="cil-contrast btn-icon mr-2"></span> Edit
-                                                    </button>
-                                                </span>
-                                                <button type="button" className="btn btn-sm btn-danger" onClick={() => showAction('delete', item)}>
-                                                    <span className="cil-contrast btn-icon mr-2"></span> Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        ))
+                                            kurikulums.map((item, index) => (
+                                                <tr key={index}>
+                                                    <th scope="row">{index + numberList}</th>
+                                                    <td>{item.nama}</td>
+                                                    <td>{item.programStudi?.nama}</td>
+                                                    <td>{item.bobotMatkulPilihan}</td>
+                                                    <td>{item.bobotMatkulWajib}</td>
+                                                    <td>{item.jumlahSks}</td>
+                                                    <td>
+                                                        <span className="m-2">
+                                                            <button type="button" className="btn btn-sm btn-success" onClick={() => showAction('edit', item)}>
+                                                                <span className="cil-contrast btn-icon mr-2"></span> Edit
+                                                            </button>
+                                                        </span>
+                                                        <button type="button" className="btn btn-sm btn-danger" onClick={() => showAction('delete', item)}>
+                                                            <span className="cil-contrast btn-icon mr-2"></span> Delete
+                                                        </button>
+                                                        <span className="m-2">
+                                                            <button type="button" className="btn btn-sm btn-info" onClick={() => showAction('detail', item)}>
+                                                                <span className="cil-contrast btn-icon mr-2"></span> Detail
+                                                            </button>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))
                                         }
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* <Paginate
-                            postsPerPage={limit}
-                            totalPosts={totalElements}
-                            paginate={paginate}
-                            currentPage={number}
-                            /> */}
 
                             <ReactPaginate
                                 previousLabel={"previous"}
@@ -350,14 +373,14 @@ export default function User() {
                             onChange={handleChange}
                             placeholder="Input Nama"
                             className={`form-control ${errors.nama ? "is-invalid" : ""}`}
-                            />
-                            {errors.nama ? (
-                               <div className="invalid-feedback">
-                                     Masukan nama.
-                                </div>
-                            ) : (
-                                ""
-                            )}
+                        />
+                        {errors.nama ? (
+                            <div className="invalid-feedback">
+                                Masukan nama.
+                            </div>
+                        ) : (
+                            ""
+                        )}
                     </div>
                     <div className="mb-3">
                         <label htmlFor="wilayah" className="form-label">Wilayah</label>
@@ -369,14 +392,14 @@ export default function User() {
                             value={inputs.wilayah || ""}
                             onChange={handleChange}
                             placeholder="Input Wilayah"
-                            />
-                            {errors.wilayah ? (
-                               <div className="invalid-feedback">
-                                     Masukan Wilayah.
-                                </div>
-                            ) : (
-                                ""
-                            )}
+                        />
+                        {errors.wilayah ? (
+                            <div className="invalid-feedback">
+                                Masukan Wilayah.
+                            </div>
+                        ) : (
+                            ""
+                        )}
                         {/* <select
                             type="text"
                             id="wilayah"
@@ -403,15 +426,15 @@ export default function User() {
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setVisible(false)}>
-                    Close
+                        Close
                     </CButton>
                     {loading ? (
                         <CButton color="primary">
-                            <span className="spinner-border spinner-border-sm" role="status"></span>                           
+                            <span className="spinner-border spinner-border-sm" role="status"></span>
                             <span className="ml-2"> Loading...</span>
                         </CButton>
-                        ) : (
-                        <CButton color="primary" onClick={() => postSchool()}>Save</CButton>
+                    ) : (
+                        <CButton color="primary" onClick={() => postKurikulum()}>Save</CButton>
                     )}
                 </CModalFooter>
             </CModal>
@@ -430,7 +453,7 @@ export default function User() {
                             name="nama"
                             value={inputs.nama || ""}
                             onChange={handleChange}
-                            />
+                        />
                     </div>
                     <div className="mb-3">
                         <label htmlFor="wilayah" className="form-label">Wilayah</label>
@@ -441,7 +464,7 @@ export default function User() {
                             name="wilayah"
                             value={inputs.wilayah || ""}
                             onChange={handleChange}
-                            />
+                        />
                         {/* <select
                             type="text"
                             className="form-select"
@@ -461,16 +484,44 @@ export default function User() {
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setVisibleEdit(false)}>
-                    Close
+                        Close
                     </CButton>
                     {loading ? (
                         <CButton color="primary">
-                            <span className="spinner-border spinner-border-sm" role="status"></span>                           
+                            <span className="spinner-border spinner-border-sm" role="status"></span>
                             <span className="ml-2"> Loading...</span>
                         </CButton>
-                        ) : (
-                        <CButton color="primary" onClick={() => editSchool()}>Save</CButton>
+                    ) : (
+                        <CButton color="primary" onClick={() => editKurikulum()}>Save</CButton>
                     )}
+                </CModalFooter>
+            </CModal>
+
+            <CModal visible={visibleDetail} onClose={() => setVisibleDetail(false)}>
+                <CModalHeader>
+                    <CModalTitle>Detail data</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div className="mb-3">
+                        <label htmlFor="nama" className="form-label">Nama : {selectedDetail?.nama}</label>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="nama" className="form-label">Program Studi : {selectedDetail?.programStudi?.nama}</label>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="nama" className="form-label">Bobot MK Pilihan : {selectedDetail?.bobotMatkulPilihan}</label>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="nama" className="form-label">Bobot MK Wajib : {selectedDetail?.bobotMatkulWajib}</label>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="nama" className="form-label">Jumlah SKS : {selectedDetail?.jumlahSks}</label>
+                    </div>
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setVisibleDetail(false)}>
+                        Close
+                    </CButton>
                 </CModalFooter>
             </CModal>
 
@@ -478,7 +529,7 @@ export default function User() {
                 title={action}
                 visibleDeletex={visibleDelete}
                 setVisibleDeletex={handleModal}
-                deleteSchoolx={deleteSchool}
+                deleteKurikulumx={deleteKurikulum}
                 loadingx={loading}
             />
 

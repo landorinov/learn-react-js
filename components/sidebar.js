@@ -31,7 +31,7 @@ export default function User(props) {
                         {/* <ul className="nav-group-items"> */}
                             {/* <li className="nav-item"><Link className={`nav-link ${router.pathname == "/social" ? "active" : ""}`} href="/social"><span className="nav-icon"></span> Sosialisasi Sekolah</Link></li>
                             <li className="nav-item"><Link className={`nav-link ${router.pathname == "/schools" ? "active" : ""}`} href="/schools"><span className="nav-icon"></span> Daftar Sekolah</Link></li> */}
-                            <li className="nav-item"><Link className={`nav-link ${router.pathname == "/dosen" ? "active" : ""}`} href="/dosen"><span className="nav-icon"></span> Daftar Dosen</Link></li>
+                            {/* <li className="nav-item"><Link className={`nav-link ${router.pathname == "/dosen" ? "active" : ""}`} href="/dosen"><span className="nav-icon"></span> Daftar Dosen</Link></li> */}
                             <li className="nav-item"><Link className={`nav-link ${router.pathname == "/kelas" ? "active" : ""}`} href="/kelas"><span className="nav-icon"></span> Daftar Kelas</Link></li>
                             <li className="nav-item"><Link className={`nav-link ${router.pathname == "/mata-kuliah" ? "active" : ""}`} href="/mata-kuliah"><span className="nav-icon"></span> Daftar Mata Kuliah</Link></li>
                             <li className="nav-item"><Link className={`nav-link ${router.pathname == "/kurikulum" ? "active" : ""}`} href="/kurikulum"><span className="nav-icon"></span> Daftar Kurikulum</Link></li>
