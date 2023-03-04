@@ -35,7 +35,7 @@ export default function Kelas() {
     const [inputs, setInputs] = useState({
         id: "",
         nama: "",
-        programStudi: { id: 0 },
+        programStudi: {},
         semester: { id: 0 },
         mataKuliah: { id: 0 },
         lingkup: { id: 0 },
@@ -484,7 +484,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {prodis.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -655,13 +655,13 @@ export default function Kelas() {
                             type="text"
                             id="prodi"
                             name="programStudi"
-                            value={inputs.programStudi || ""}
+                            value={inputs.programStudi.id || ""}
                             onChange={handleChange}
                             className={`form-select ${errors.programStudi ? "is-invalid" : ""}`}
                         >
                             <option value="">Select...</option>
                             {prodis.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
