@@ -35,6 +35,7 @@ export default function User(props) {
                             <li className="nav-item"><Link className={`nav-link ${router.pathname == "/kelas" ? "active" : ""}`} href="/kelas"><span className="nav-icon"></span> Daftar Kelas</Link></li>
                             <li className="nav-item"><Link className={`nav-link ${router.pathname == "/mata-kuliah" ? "active" : ""}`} href="/mata-kuliah"><span className="nav-icon"></span> Daftar Mata Kuliah</Link></li>
                             <li className="nav-item"><Link className={`nav-link ${router.pathname == "/kurikulum" ? "active" : ""}`} href="/kurikulum"><span className="nav-icon"></span> Daftar Kurikulum</Link></li>
+                            <li className="nav-item"><Link className={`nav-link ${router.pathname == "/lookup" ? "active" : ""}`} href="/lookup"><span className="nav-icon"></span> Daftar Lookup</Link></li>
                         {/* </ul> */}
                     {/* </li> */}
                 </ul>
