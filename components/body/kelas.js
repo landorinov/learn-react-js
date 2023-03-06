@@ -35,11 +35,11 @@ export default function Kelas() {
     const [inputs, setInputs] = useState({
         id: "",
         nama: "",
-        programStudi: {},
-        semester: { id: 0 },
-        mataKuliah: { id: 0 },
-        lingkup: { id: 0 },
-        mode: { id: 0 },
+        programStudi: 0,
+        semester: 0,
+        mataKuliah: 0,
+        lingkup: 0,
+        mode: 0,
         tglMulaiEfektif: startDate,
         tglAkhirEfektif: endDate
     })
@@ -148,11 +148,11 @@ export default function Kelas() {
         if (e == 'add') {
             setInputs({
                 nama: "",
-                programStudi: { id: 0 },
-                semester: { id: 0 },
-                mataKuliah: { id: 0 },
-                lingkup: { id: 0 },
-                mode: { id: 0 },
+                programStudi: 0,
+                semester: 0,
+                mataKuliah: 0,
+                lingkup: 0,
+                mode: 0,
                 tglMulaiEfektif: startDate,
                 tglAkhirEfektif: endDate
             })
@@ -220,11 +220,11 @@ export default function Kelas() {
         // } else {
         const dataKelas = {
             nama: inputs.nama,
-            programStudi: inputs.programStudi,
-            semester: inputs.semester,
-            mataKuliah: inputs.mataKuliah,
-            lingkup: inputs.lingkup,
-            mode: inputs.mode,
+            programStudi: { id: Number(inputs.programStudi) },
+            semester: { id: Number(inputs.semester) },
+            mataKuliah: { id: Number(inputs.mataKuliah)},
+            lingkup: { id: Number(inputs.lingkup)},
+            mode: { id: Number(inputs.mode)},
             tglMulaiEfektif: inputs.tglMulaiEfektif,
             tglAkhirEfektif: inputs.tglAkhirEfektif
         }
@@ -509,7 +509,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {semesters.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -534,7 +534,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {mataKuliahs.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -559,7 +559,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {lingkups.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -584,7 +584,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {modes.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -686,7 +686,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {semesters.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -711,7 +711,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {mataKuliahs.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -736,7 +736,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {lingkups.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
@@ -761,7 +761,7 @@ export default function Kelas() {
                         >
                             <option value="">Select...</option>
                             {modes.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
                             ))}
