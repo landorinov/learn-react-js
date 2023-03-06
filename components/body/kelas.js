@@ -23,6 +23,7 @@ export default function Kelas() {
     const [mataKuliahs, setMataKuliahs] = useState([])
     const [lingkups, setLingkups] = useState([])
     const [modes, setModes] = useState([])
+
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
 
@@ -107,7 +108,7 @@ export default function Kelas() {
     }
 
     const getMataKuliahs = async () => {
-        const host = `${url}/v1/lookup/list?page=0&size=100&type=jenis_mata_kuliah`
+        const host = `${url}/v1/mata-kuliah/list?page=0&size=100&nama=`
         const res = await fetch(host, { headers }).catch(err => console.error(err))
         if (res?.ok) {
             const newData = await res.json()
@@ -143,7 +144,13 @@ export default function Kelas() {
         setAction(e)
         setErrors({
             nama: "",
-            wilayah: ""
+            programStudi: "",
+            semester: "",
+            mataKuliah: "",
+            lingkup: "",
+            mode: "",
+            tglMulaiEfektif: "",
+            tglAkhirEfektif: "",
         })
         if (e == 'add') {
             setInputs({
@@ -153,19 +160,19 @@ export default function Kelas() {
                 mataKuliah: 0,
                 lingkup: 0,
                 mode: 0,
-                tglMulaiEfektif: startDate,
-                tglAkhirEfektif: endDate
+                tglMulaiEfektif: convertDate(startDate),
+                tglAkhirEfektif: convertDate(endDate)
             })
             setVisible(!visible)
         } else if (e == 'edit') {
             setInputs({
                 id: i.id,
                 nama: i.nama,
-                programStudi: { id: i.programStudi?.id },
-                semester: { id: i.semester?.id },
-                mataKuliah: { id: i.mataKuliah?.id },
-                lingkup: { id: i.lingkup?.id },
-                mode: { id: i.mode?.id },
+                programStudi: Number(i.programStudi?.id),
+                semester: Number(i.semester?.id),
+                mataKuliah: Number(i.mataKuliah?.id),
+                lingkup: Number(i.lingkup?.id),
+                mode: Number(i.mode?.id),
                 tglMulaiEfektif: i.tglMulaiEfektif,
                 tglAkhirEfektif: i.tglAkhirEfektif,
             })
@@ -179,7 +186,6 @@ export default function Kelas() {
             })
             setVisibleDelete(!visible)
         }
-        console.log(inputs);
     }
 
     const handleChange = e => {
@@ -201,67 +207,54 @@ export default function Kelas() {
         setVisibleDelete(false)
     }
 
+    const convertDate = (inputFormat) => {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat)
+        return [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-')
+    }
+
     const postKelas = async () => {
         setLoading(true)
-        // if (inputs.nama === '' || inputs.wilayah === '') {
-        //     const name = ['nama', 'wilayah']
-        //     if (inputs.nama == '' && inputs.wilayah == '') {
-        //         for (let i = 0; i < name.length; i++) {
-        //             setErrors(values => ({ ...values, [name[i]]: "Required" }))
-        //         }
-        //         setLoading(false)
-        //     } else if (inputs.nama == '') {
-        //         setErrors(values => ({ ...values, nama: "Required" }))
-        //         setLoading(false)
-        //     } else {
-        //         setErrors(values => ({ ...values, wilayah: "Required" }))
-        //         setLoading(false)
-        //     }
-        // } else {
         const dataKelas = {
             nama: inputs.nama,
             programStudi: { id: Number(inputs.programStudi) },
             semester: { id: Number(inputs.semester) },
-            mataKuliah: { id: Number(inputs.mataKuliah)},
-            lingkup: { id: Number(inputs.lingkup)},
-            mode: { id: Number(inputs.mode)},
+            mataKuliah: { id: Number(inputs.mataKuliah) },
+            lingkup: { id: Number(inputs.lingkup) },
+            mode: { id: Number(inputs.mode) },
             tglMulaiEfektif: inputs.tglMulaiEfektif,
             tglAkhirEfektif: inputs.tglAkhirEfektif
         }
 
-        console.log(dataKelas);
-
-        // const host = `${url}/v1/kelas/save`
-        // await fetch(host, {
-        //     method: "POST",
-        //     headers: headers,
-        //     body: JSON.stringify(dataKelas),
-        // })
-        //     .then(res => res.json())
-        //     .then((data) => {
-        //         console.log('Success:', data);
-        //         toast("Successfully added!");
-        //         getKelass()
-        //         setLoading(false)
-        //         setVisible(!visible)
-        //     })
-        //     .catch((err) => {
-        //         console.error('Error:', err);
-        //         setLoading(false)
-        //     });
-
-        // }
+        const host = `${url}/v1/kelas/save`
+        await fetch(host, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(dataKelas),
+        })
+            .then(res => res.json())
+            .then((data) => {
+                console.log('Success:', data);
+                toast("Successfully added!");
+                getKelass()
+                setLoading(false)
+                setVisible(!visible)
+            })
+            .catch((err) => {
+                console.error('Error:', err);
+                setLoading(false)
+            });
     }
     const editKelas = async () => {
         setLoading(true)
         const dataKelas = {
             id: inputs.id,
             nama: inputs.nama,
-            programStudi: inputs.programStudi,
-            semester: inputs.semester,
-            mataKuliah: inputs.mataKuliah,
-            lingkup: inputs.lingkup,
-            mode: inputs.mode,
+            programStudi: { id: Number(inputs.programStudi) },
+            semester: { id: Number(inputs.semester) },
+            mataKuliah: { id: Number(inputs.mataKuliah) },
+            lingkup: { id: Number(inputs.lingkup) },
+            mode: { id: Number(inputs.mode) },
             tglMulaiEfektif: inputs.tglMulaiEfektif,
             tglAkhirEfektif: inputs.tglAkhirEfektif
         }
@@ -381,11 +374,11 @@ export default function Kelas() {
                                             <th scope="col">No.</th>
                                             <th scope="col">Nama</th>
                                             <th scope="col">Mata Kuliah</th>
-                                            <th scope="col">Bobot MK</th>
-                                            <th scope="col">Bobot Praktikum</th>
-                                            <th scope="col">Bobot Simulasi</th>
-                                            <th scope="col">Bobot Tatap Muka</th>
-                                            <th scope="col">Bobot Praktek Lapangan</th>
+                                            <th scope="col">Program Studi</th>
+                                            <th scope="col">Lingkup</th>
+                                            <th scope="col">Jenis</th>
+                                            <th scope="col">Kode</th>
+                                            <th scope="col">Semester</th>
                                             <th scope="col">Action</th>
                                         </tr>
                                     </thead>
@@ -395,12 +388,12 @@ export default function Kelas() {
                                                 <tr key={index}>
                                                     <th scope="row">{index + numberList}</th>
                                                     <td>{item.nama}</td>
-                                                    <td>{item.mataKuliah.programStudi.nama}</td>
-                                                    <td>{item.mataKuliah.bobotMatkul}</td>
-                                                    <td>{item.mataKuliah.bobotPratikum}</td>
-                                                    <td>{item.mataKuliah.bobotSimulasi}</td>
-                                                    <td>{item.mataKuliah.bobotTatapMuka}</td>
-                                                    <td>{item.mataKuliah.bobotPraktekLapangan}</td>
+                                                    <td>{item.mataKuliah.nama}</td>
+                                                    <td>{item.programStudi.nama}</td>
+                                                    <td>{item.lingkup.nama}</td>
+                                                    <td>{item.mataKuliah.jenisMatkul.nama}</td>
+                                                    <td>{item.mataKuliah.kode}</td>
+                                                    <td>{item.semester.nama}</td>
                                                     <td>
                                                         <span className="m-2">
                                                             <button type="button" className="btn btn-sm btn-success" onClick={() => showAction('edit', item)}>
@@ -451,6 +444,183 @@ export default function Kelas() {
             <CModal visible={visible} onClose={() => setVisible(false)}>
                 <CModalHeader>
                     <CModalTitle>Add data</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div className="mb-3">
+                        <label htmlFor="nama" className="form-label">Nama</label>
+                        <input
+                            type="text"
+                            id="nama"
+                            name="nama"
+                            value={inputs.nama || ""}
+                            onChange={handleChange}
+                            placeholder="Input Nama"
+                            className={`form-control ${errors.nama ? "is-invalid" : ""}`}
+                        />
+                        {errors.nama ? (
+                            <div className="invalid-feedback">
+                                Masukan nama.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="programStudi" className="form-label">Program Studi</label>
+                        <select
+                            type="text"
+                            id="prodi"
+                            name="programStudi"
+                            value={inputs.programStudi || ""}
+                            onChange={handleChange}
+                            className={`form-select ${errors.programStudi ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {prodis.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.programStudi ? (
+                            <div className="invalid-feedback">
+                                Pilih program studi.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="semester" className="form-label">Semester</label>
+                        <select
+                            type="text"
+                            id="semester"
+                            name="semester"
+                            value={inputs.semester || ""}
+                            onChange={handleChange}
+                            className={`form-select ${errors.semester ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {semesters.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.semester ? (
+                            <div className="invalid-feedback">
+                                Pilih semester.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="mataKuliah" className="form-label">Mata Kuliah</label>
+                        <select
+                            type="text"
+                            id="mataKuliah"
+                            name="mataKuliah"
+                            value={inputs.mataKuliah || ""}
+                            onChange={handleChange}
+                            className={`form-select ${errors.mataKuliah ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {mataKuliahs.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.mataKuliah ? (
+                            <div className="invalid-feedback">
+                                Pilih mata kuliah.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="lingkup" className="form-label">Lingkup Kelas</label>
+                        <select
+                            type="text"
+                            id="lingkup"
+                            name="lingkup"
+                            value={inputs.lingkup || ""}
+                            onChange={handleChange}
+                            className={`form-select ${errors.lingkup ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {lingkups.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.lingkup ? (
+                            <div className="invalid-feedback">
+                                Pilih lingkup kelas.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="mode" className="form-label">Mode Kelas</label>
+                        <select
+                            type="text"
+                            id="mode"
+                            name="mode"
+                            value={inputs.mode || ""}
+                            onChange={handleChange}
+                            className={`form-select ${errors.mode ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {modes.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.mode ? (
+                            <div className="invalid-feedback">
+                                Pilih mode kelas.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <div className="row">
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Mulai Efektif</label>
+                                <DatePicker className="px-2" selected={startDate} dateFormat={'dd/MM/yy'} onChange={(date) => setStartDate(date)} />
+                            </div>
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Akhir Efektif</label>
+                                <DatePicker className="px-2" selected={endDate} dateFormat={'dd/MM/yy'} onChange={(date) => setEndDate(date)} />
+                            </div>
+                        </div>
+                    </div>
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setVisible(false)}>
+                        Close
+                    </CButton>
+                    {loading ? (
+                        <CButton color="primary">
+                            <span className="spinner-border spinner-border-sm" role="status"></span>
+                            <span className="ml-2"> Loading...</span>
+                        </CButton>
+                    ) : (
+                        <CButton color="primary" onClick={() => postKelas()}>Save</CButton>
+                    )}
+                </CModalFooter>
+            </CModal>
+
+            <CModal visible={visibleEdit} onClose={() => setVisibleEdit(false)}>
+                <CModalHeader>
+                    <CModalTitle>Edit data</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                     <div className="mb-3">
@@ -599,188 +769,11 @@ export default function Kelas() {
                     </div>
                     <div className="mb-3">
                         <div className="row">
-                            <div className="col-6">
+                            <div className="col-md-6 col-sm-12">
                                 <label htmlFor="mode" className="form-label">Tanggal Mulai Efektif</label>
                                 <DatePicker className="px-2" selected={startDate} dateFormat={'dd/MM/yy'} onChange={(date) => setStartDate(date)} />
                             </div>
-                            <div className="col-6">
-                                <label htmlFor="mode" className="form-label">Tanggal Akhir Efektif</label>
-                                <DatePicker className="px-2" selected={endDate} dateFormat={'dd/MM/yy'} onChange={(date) => setEndDate(date)} />
-                            </div>
-                        </div>
-                    </div>
-                </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => setVisible(false)}>
-                        Close
-                    </CButton>
-                    {loading ? (
-                        <CButton color="primary">
-                            <span className="spinner-border spinner-border-sm" role="status"></span>
-                            <span className="ml-2"> Loading...</span>
-                        </CButton>
-                    ) : (
-                        <CButton color="primary" onClick={() => postKelas()}>Save</CButton>
-                    )}
-                </CModalFooter>
-            </CModal>
-
-            <CModal visible={visibleEdit} onClose={() => setVisibleEdit(false)}>
-                <CModalHeader>
-                    <CModalTitle>Edit data</CModalTitle>
-                </CModalHeader>
-                <CModalBody>
-                    <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Nama</label>
-                        <input
-                            type="text"
-                            id="nama"
-                            name="nama"
-                            value={inputs.nama || ""}
-                            onChange={handleChange}
-                            placeholder="Input Nama"
-                            className={`form-control ${errors.nama ? "is-invalid" : ""}`}
-                        />
-                        {errors.nama ? (
-                            <div className="invalid-feedback">
-                                Masukan nama.
-                            </div>
-                        ) : (
-                            ""
-                        )}
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="programStudi" className="form-label">Program Studi</label>
-                        <select
-                            type="text"
-                            id="prodi"
-                            name="programStudi"
-                            value={inputs.programStudi.id || ""}
-                            onChange={handleChange}
-                            className={`form-select ${errors.programStudi ? "is-invalid" : ""}`}
-                        >
-                            <option value="">Select...</option>
-                            {prodis.content?.map((item, index) => (
-                                <option key={index} value={item.id}>
-                                    {item.nama}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.wilayah ? (
-                            <div className="invalid-feedback">
-                                Pilih program studi.
-                            </div>
-                        ) : (
-                            ""
-                        )}
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="semester" className="form-label">Semester</label>
-                        <select
-                            type="text"
-                            id="semester"
-                            name="semester"
-                            value={inputs.semester || ""}
-                            onChange={handleChange}
-                            className={`form-select ${errors.semester ? "is-invalid" : ""}`}
-                        >
-                            <option value="">Select...</option>
-                            {semesters.content?.map((item, index) => (
-                                <option key={index} value={item.id}>
-                                    {item.nama}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.semester ? (
-                            <div className="invalid-feedback">
-                                Pilih semester.
-                            </div>
-                        ) : (
-                            ""
-                        )}
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="mataKuliah" className="form-label">Mata Kuliah</label>
-                        <select
-                            type="text"
-                            id="mataKuliah"
-                            name="mataKuliah"
-                            value={inputs.mataKuliah || ""}
-                            onChange={handleChange}
-                            className={`form-select ${errors.mataKuliah ? "is-invalid" : ""}`}
-                        >
-                            <option value="">Select...</option>
-                            {mataKuliahs.content?.map((item, index) => (
-                                <option key={index} value={item.id}>
-                                    {item.nama}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.mataKuliah ? (
-                            <div className="invalid-feedback">
-                                Pilih mata kuliah.
-                            </div>
-                        ) : (
-                            ""
-                        )}
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="lingkup" className="form-label">Lingkup Kelas</label>
-                        <select
-                            type="text"
-                            id="lingkup"
-                            name="lingkup"
-                            value={inputs.lingkup || ""}
-                            onChange={handleChange}
-                            className={`form-select ${errors.lingkup ? "is-invalid" : ""}`}
-                        >
-                            <option value="">Select...</option>
-                            {lingkups.content?.map((item, index) => (
-                                <option key={index} value={item.id}>
-                                    {item.nama}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.lingkup ? (
-                            <div className="invalid-feedback">
-                                Pilih lingkup kelas.
-                            </div>
-                        ) : (
-                            ""
-                        )}
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="mode" className="form-label">Mode Kelas</label>
-                        <select
-                            type="text"
-                            id="mode"
-                            name="mode"
-                            value={inputs.mode || ""}
-                            onChange={handleChange}
-                            className={`form-select ${errors.mode ? "is-invalid" : ""}`}
-                        >
-                            <option value="">Select...</option>
-                            {modes.content?.map((item, index) => (
-                                <option key={index} value={item.id}>
-                                    {item.nama}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.mode ? (
-                            <div className="invalid-feedback">
-                                Pilih mode kelas.
-                            </div>
-                        ) : (
-                            ""
-                        )}
-                    </div>
-                    <div className="mb-3">
-                        <div className="row">
-                            <div className="col-6">
-                                <label htmlFor="mode" className="form-label">Tanggal Mulai Efektif</label>
-                                <DatePicker className="px-2" selected={startDate} dateFormat={'dd/MM/yy'} onChange={(date) => setStartDate(date)} />
-                            </div>
-                            <div className="col-6">
+                            <div className="col-md-6 col-sm-12">
                                 <label htmlFor="mode" className="form-label">Tanggal Akhir Efektif</label>
                                 <DatePicker className="px-2" selected={endDate} dateFormat={'dd/MM/yy'} onChange={(date) => setEndDate(date)} />
                             </div>

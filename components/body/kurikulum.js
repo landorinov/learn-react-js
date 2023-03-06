@@ -4,6 +4,8 @@ import { CButton, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } 
 import { ToastContainer, toast } from 'react-toastify';
 import ReactPaginate from "react-paginate";
 import Modal from "../modal"
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Kurikulum() {
     const [search, setSearch] = useState("")
@@ -14,8 +16,11 @@ export default function Kurikulum() {
     const [numberList, setnumberList] = useState(1);
 
     const [action, setAction] = useState("")
+
     const [kurikulums, setKurikulums] = useState([])
-    const [regions, setRegions] = useState([])
+    const [prodis, setProdis] = useState([])
+    const [startDate, setStartDate] = useState(new Date());
+
     const [loading, setLoading] = useState(false)
     const [visible, setVisible] = useState(false)
     const [visibleEdit, setVisibleEdit] = useState(false)
@@ -25,25 +30,24 @@ export default function Kurikulum() {
     const [inputs, setInputs] = useState({
         id: "",
         nama: "",
-        wilayah: ""
+        programStudi: 0,
+        bobotMatkulPilihan: "",
+        bobotMatkulWajib: "",
+        tglMulaiEfektif: startDate,
     })
     const [errors, setErrors] = useState({
         nama: "",
-        wilayah: ""
+        programStudi: "",
+        bobotMatkulPilihan: "",
+        bobotMatkulWajib: "",
+        tglMulaiEfektif: "",
     })
 
     const [selectedDetail, setSelectedDetail] = useState({})
-    // const [selectedDetail, setSelectedDetail] = useState({
-    //     kode: "",
-    //     nama: "",
-    //     bobot: "",
-    //     programStudi: "",
-    //     jenisMatkul: ""
-    // })
 
     useEffect(() => {
         getKurikulums()
-        // getRegions()
+        getProdis()
     }, [])
 
     const getKurikulums = async (e, i, a) => {
@@ -65,43 +69,47 @@ export default function Kurikulum() {
         }
     }
 
-    // const getRegions = async () => {
-    //     const host = `${url}/v1/lookup/list?page=0&size=10&type=wilayah_sekolah`
-    //     const res = await fetch(host, { headers }).catch(err => console.error(err))
-    //     if (res?.ok) {
-    //         const newData = await res.json()
-    //         setRegions(newData.data)
-    //     } else {
-    //         console.log("err")
-    //     }
-    // }
+    const getProdis = async () => {
+        const host = `${url}/v1/lookup/list?page=0&size=100&type=program_studi`
+        const res = await fetch(host, { headers }).catch(err => console.error(err))
+        if (res?.ok) {
+            const newData = await res.json()
+            setProdis(newData.data)
+        } else {
+            console.log("err")
+        }
+    }
 
     const showAction = (e, i) => {
         setAction(e)
         setErrors({
             nama: "",
-            wilayah: ""
+            programStudi: "",
+            bobotMatkulPilihan: "",
+            bobotMatkulWajib: "",
+            tglMulaiEfektif: "",
         })
         if (e == 'add') {
             setInputs({
                 nama: "",
-                wilayah: ""
+                programStudi: 0,
+                bobotMatkulPilihan: "",
+                bobotMatkulWajib: "",
+                tglMulaiEfektif: convertDate(startDate),
             })
             setVisible(!visible)
         } else if (e == 'edit') {
-            setSelectedDetail({
+            setInputs({
                 id: i.id,
+                nama: i.nama,
+                programStudi: Number(i.programStudi?.id),
+                bobotMatkulPilihan: i.bobotMatkulPilihan,
+                bobotMatkulWajib: i.bobotMatkulWajib,
+                tglMulaiEfektif: i.tglMulaiEfektif,
             })
             setVisibleEdit(!visible)
         } else if (e == 'detail') {
             setSelectedDetail(i)
-            // setSelectedDetail({
-            //     kode: i.kode,
-            //     nama: i.nama,
-            //     bobot: i.bobotMatkul,
-            //     programStudi: i.programStudi.nama,
-            //     jenisMatkul: i.jenisMatkul.nama
-            // })
             setVisibleDetail(!visibleDetail)
         } else {
             setSelectedDetail({
@@ -130,54 +138,50 @@ export default function Kurikulum() {
         setVisibleDelete(false)
     }
 
+    const convertDate = (inputFormat) => {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat)
+        return [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-')
+    }
+
     const postKurikulum = async () => {
         setLoading(true)
-        if (inputs.nama === '' || inputs.wilayah === '') {
-            const name = ['nama', 'wilayah']
-            if (inputs.nama == '' && inputs.wilayah == '') {
-                for (let i = 0; i < name.length; i++) {
-                    setErrors(values => ({ ...values, [name[i]]: "Required" }))
-                }
-                setLoading(false)
-            } else if (inputs.nama == '') {
-                setErrors(values => ({ ...values, nama: "Required" }))
-                setLoading(false)
-            } else {
-                setErrors(values => ({ ...values, wilayah: "Required" }))
-                setLoading(false)
-            }
-        } else {
-            const dataSchool = {
-                nama: inputs.nama,
-                wilayah: inputs.wilayah,
-            }
-
-            const host = `${url}/v1/kurikulum/save`
-            await fetch(host, {
-                method: "POST",
-                headers: headers,
-                body: JSON.stringify(dataSchool),
-            })
-                .then(res => res.json())
-                .then((data) => {
-                    console.log('Success:', data);
-                    toast("Successfully added!");
-                    getKurikulums()
-                    setLoading(false)
-                    setVisible(!visible)
-                })
-                .catch((err) => {
-                    console.error('Error:', err);
-                    setLoading(false)
-                });
+        const dataSchool = {
+            nama: inputs.nama,
+            programStudi: { id: Number(inputs.programStudi) },
+            bobotMatkulPilihan: inputs.bobotMatkulPilihan,
+            bobotMatkulWajib: inputs.bobotMatkulWajib,
+            tglMulaiEfektif: inputs.tglMulaiEfektif,
         }
+
+        const host = `${url}/v1/kurikulum/save`
+        await fetch(host, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(dataSchool),
+        })
+            .then(res => res.json())
+            .then((data) => {
+                console.log('Success:', data);
+                toast("Successfully added!");
+                getKurikulums()
+                setLoading(false)
+                setVisible(!visible)
+            })
+            .catch((err) => {
+                console.error('Error:', err);
+                setLoading(false)
+            });
     }
     const editKurikulum = async () => {
         setLoading(true)
         const dataSchool = {
             id: inputs.id,
             nama: inputs.nama,
-            wilayah: inputs.wilayah,
+            programStudi: { id: Number(inputs.programStudi) },
+            bobotMatkulPilihan: inputs.bobotMatkulPilihan,
+            bobotMatkulWajib: inputs.bobotMatkulWajib,
+            tglMulaiEfektif: inputs.tglMulaiEfektif,
         }
 
         const host = `${url}/v1/kurikulum/update`
@@ -383,45 +387,75 @@ export default function Kurikulum() {
                         )}
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="wilayah" className="form-label">Wilayah</label>
-                        <input
+                        <label htmlFor="programStudi" className="form-label">Program Studi</label>
+                        <select
                             type="text"
-                            className="form-control"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
+                            id="prodi"
+                            name="programStudi"
+                            value={inputs.programStudi || ""}
                             onChange={handleChange}
-                            placeholder="Input Wilayah"
-                        />
-                        {errors.wilayah ? (
+                            className={`form-select ${errors.programStudi ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {prodis.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.programStudi ? (
                             <div className="invalid-feedback">
-                                Masukan Wilayah.
+                                Pilih program studi.
                             </div>
                         ) : (
                             ""
                         )}
-                        {/* <select
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotMatkulPilihan" className="form-label">Bobot Mata Kuliah Pilihan</label>
+                        <input
                             type="text"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
+                            id="bobotMatkulPilihan"
+                            name="bobotMatkulPilihan"
+                            value={inputs.bobotMatkulPilihan || ""}
                             onChange={handleChange}
-                            className={`form-select ${errors.wilayah ? "is-invalid" : ""}`}
-                            >
-                                <option value="">Select...</option>
-                                {regions.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
-                                    {item.nama}
-                                </option>
-                                ))}
-                            </select>
-                            {errors.wilayah ? (
-                               <div className="invalid-feedback">
-                                     Pilih kecamatan.
-                                </div>
-                            ) : (
-                                ""
-                            )} */}
+                            placeholder="Input Bobot Mata Kuliah Pilihan"
+                            className={`form-control ${errors.bobotMatkulPilihan ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotMatkulPilihan ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Mata Kuliah Pilihan.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotMatkulWajib" className="form-label">Bobot Mata Kuliah Wajib</label>
+                        <input
+                            type="text"
+                            id="bobotMatkulWajib"
+                            name="bobotMatkulWajib"
+                            value={inputs.bobotMatkulWajib || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Mata Kuliah Wajib"
+                            className={`form-control ${errors.bobotMatkulWajib ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotMatkulWajib ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Mata Kuliah Wajib.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <div className="row">
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Mulai Efektif</label>
+                                <DatePicker className="px-2" selected={startDate} dateFormat={'dd/MM/yy'} onChange={(date) => setStartDate(date)} />
+                            </div>
+                        </div>
                     </div>
                 </CModalBody>
                 <CModalFooter>
@@ -445,41 +479,94 @@ export default function Kurikulum() {
                 </CModalHeader>
                 <CModalBody>
                     <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Nama Sekolah</label>
+                        <label htmlFor="nama" className="form-label">Nama</label>
                         <input
                             type="text"
-                            className="form-control"
                             id="nama"
                             name="nama"
                             value={inputs.nama || ""}
                             onChange={handleChange}
+                            placeholder="Input Nama"
+                            className={`form-control ${errors.nama ? "is-invalid" : ""}`}
                         />
+                        {errors.nama ? (
+                            <div className="invalid-feedback">
+                                Masukan nama.
+                            </div>
+                        ) : (
+                            ""
+                        )}
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="wilayah" className="form-label">Wilayah</label>
-                        <input
+                        <label htmlFor="programStudi" className="form-label">Program Studi</label>
+                        <select
                             type="text"
-                            className="form-control"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
+                            id="prodi"
+                            name="programStudi"
+                            value={inputs.programStudi || ""}
                             onChange={handleChange}
-                        />
-                        {/* <select
-                            type="text"
-                            className="form-select"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
-                            onChange={handleChange}
-                            >
-                             <option value="">Select...</option>
-                                {regions.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                            className={`form-select ${errors.programStudi ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {prodis.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
-                                ))}
-                            </select> */}
+                            ))}
+                        </select>
+                        {errors.programStudi ? (
+                            <div className="invalid-feedback">
+                                Pilih program studi.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotMatkulPilihan" className="form-label">Bobot Mata Kuliah Pilihan</label>
+                        <input
+                            type="text"
+                            id="bobotMatkulPilihan"
+                            name="bobotMatkulPilihan"
+                            value={inputs.bobotMatkulPilihan || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Mata Kuliah Pilihan"
+                            className={`form-control ${errors.bobotMatkulPilihan ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotMatkulPilihan ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Mata Kuliah Pilihan.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotMatkulWajib" className="form-label">Bobot Mata Kuliah Wajib</label>
+                        <input
+                            type="text"
+                            id="bobotMatkulWajib"
+                            name="bobotMatkulWajib"
+                            value={inputs.bobotMatkulWajib || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Mata Kuliah Wajib"
+                            className={`form-control ${errors.bobotMatkulWajib ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotMatkulWajib ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Mata Kuliah Wajib.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <div className="row">
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Mulai Efektif</label>
+                                <DatePicker className="px-2" selected={startDate} dateFormat={'dd/MM/yy'} onChange={(date) => setStartDate(date)} />
+                            </div>
+                        </div>
                     </div>
                 </CModalBody>
                 <CModalFooter>

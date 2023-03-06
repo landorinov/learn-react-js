@@ -4,6 +4,8 @@ import { CButton, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } 
 import { ToastContainer, toast } from 'react-toastify';
 import ReactPaginate from "react-paginate";
 import Modal from "../modal"
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function MataKuliah() {
     const [search, setSearch] = useState("")
@@ -14,8 +16,14 @@ export default function MataKuliah() {
     const [numberList, setnumberList] = useState(1);
 
     const [action, setAction] = useState("")
+
     const [mataKuliahs, setMataKuliahs] = useState([])
-    const [regions, setRegions] = useState([])
+    const [prodis, setProdis] = useState([])
+    const [jenisMatkuls, setJenisMatkuls] = useState([])
+
+    const [startDate, setStartDate] = useState(new Date());
+    const [endDate, setEndDate] = useState(new Date());
+
     const [loading, setLoading] = useState(false)
     const [visible, setVisible] = useState(false)
     const [visibleEdit, setVisibleEdit] = useState(false)
@@ -25,25 +33,37 @@ export default function MataKuliah() {
     const [inputs, setInputs] = useState({
         id: "",
         nama: "",
-        wilayah: ""
+        programStudi: 0,
+        jenisMatkul: 0,
+        kode: "",
+        bobotPratikum: "",
+        bobotSimulasi: "",
+        tglMulaiEfektif: startDate,
+        tglAkhirEfektif: endDate,
+        bobotTatapMuka: "",
+        bobotPraktekLapangan: "",
+        metode: "metode",
     })
     const [errors, setErrors] = useState({
         nama: "",
-        wilayah: ""
+        programStudi: "",
+        jenisMatkul: "",
+        kode: "",
+        bobotPratikum: "",
+        bobotSimulasi: "",
+        tglMulaiEfektif: "",
+        tglAkhirEfektif: "",
+        bobotTatapMuka: "",
+        bobotPraktekLapangan: "",
+        metode: "",
     })
 
     const [selectedDetail, setSelectedDetail] = useState({})
-    // const [selectedDetail, setSelectedDetail] = useState({
-    //     kode: "",
-    //     nama: "",
-    //     bobot: "",
-    //     programStudi: "",
-    //     jenisMatkul: ""
-    // })
 
     useEffect(() => {
         getMataKuliahs()
-        // getRegions()
+        getProdis()
+        getJenisMatkuls()
     }, [])
 
     const getMataKuliahs = async (e, i, a) => {
@@ -64,43 +84,78 @@ export default function MataKuliah() {
             console.log("err")
         }
     }
-    // const getRegions = async () => {
-    //     const host = `${url}/v1/lookup/list?page=0&size=10&type=wilayah_sekolah`
-    //     const res = await fetch(host, { headers }).catch(err => console.error(err))
-    //     if (res?.ok) {
-    //         const newData = await res.json()
-    //         setRegions(newData.data)
-    //     } else {
-    //         console.log("err")
-    //     }
-    // }
+
+    const getProdis = async () => {
+        const host = `${url}/v1/lookup/list?page=0&size=100&type=program_studi`
+        const res = await fetch(host, { headers }).catch(err => console.error(err))
+        if (res?.ok) {
+            const newData = await res.json()
+            setProdis(newData.data)
+        } else {
+            console.log("err")
+        }
+    }
+
+    const getJenisMatkuls = async () => {
+        const host = `${url}/v1/lookup/list?page=0&size=100&type=jenis_mata_kuliah`
+        const res = await fetch(host, { headers }).catch(err => console.error(err))
+        if (res?.ok) {
+            const newData = await res.json()
+            setJenisMatkuls(newData.data)
+        } else {
+            console.log("err")
+        }
+    }
 
     const showAction = (e, i) => {
         setAction(e)
         setErrors({
             nama: "",
-            wilayah: ""
+            programStudi: "",
+            jenisMatkul: "",
+            kode: "",
+            bobotPratikum: "",
+            bobotSimulasi: "",
+            tglMulaiEfektif: "",
+            tglAkhirEfektif: "",
+            bobotTatapMuka: "",
+            bobotPraktekLapangan: "",
+            metode: "",
         })
         if (e == 'add') {
             setInputs({
                 nama: "",
-                wilayah: ""
+                programStudi: 0,
+                jenisMatkul: 0,
+                kode: "",
+                bobotPratikum: "",
+                bobotSimulasi: "",
+                tglMulaiEfektif: convertDate(startDate),
+                tglAkhirEfektif: convertDate(endDate),
+                bobotTatapMuka: "",
+                bobotPraktekLapangan: "",
+                metode: "metode",
+
             })
             setVisible(!visible)
         } else if (e == 'edit') {
-            setSelectedDetail({
+            setInputs({
                 id: i.id,
+                nama: i.nama,
+                programStudi: Number(i.programStudi?.id),
+                jenisMatkul: Number(i.jenisMatkul?.id),
+                kode: i.kode,
+                bobotPratikum: i.bobotPratikum,
+                bobotSimulasi: i.bobotSimulasi,
+                bobotTatapMuka: i.bobotTatapMuka,
+                bobotPraktekLapangan: i.bobotPraktekLapangan,
+                metode: i.metode,
+                tglMulaiEfektif: i.tglMulaiEfektif,
+                tglAkhirEfektif: i.tglAkhirEfektif,
             })
             setVisibleEdit(!visible)
         } else if (e == 'detail') {
             setSelectedDetail(i)
-            // setSelectedDetail({
-            //     kode: i.kode,
-            //     nama: i.nama,
-            //     bobot: i.bobotMatkul,
-            //     programStudi: i.programStudi.nama,
-            //     jenisMatkul: i.jenisMatkul.nama
-            // })
             setVisibleDetail(!visibleDetail)
         } else {
             setSelectedDetail({
@@ -129,54 +184,62 @@ export default function MataKuliah() {
         setVisibleDelete(false)
     }
 
+    const convertDate = (inputFormat) => {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat)
+        return [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-')
+    }
+
     const postMataKuliah = async () => {
         setLoading(true)
-        if (inputs.nama === '' || inputs.wilayah === '') {
-            const name = ['nama', 'wilayah']
-            if (inputs.nama == '' && inputs.wilayah == '') {
-                for (let i = 0; i < name.length; i++) {
-                    setErrors(values => ({ ...values, [name[i]]: "Required" }))
-                }
-                setLoading(false)
-            } else if (inputs.nama == '') {
-                setErrors(values => ({ ...values, nama: "Required" }))
-                setLoading(false)
-            } else {
-                setErrors(values => ({ ...values, wilayah: "Required" }))
-                setLoading(false)
-            }
-        } else {
-            const dataSchool = {
-                nama: inputs.nama,
-                wilayah: inputs.wilayah,
-            }
-
-            const host = `${url}/v1/mata-kuliah/save`
-            await fetch(host, {
-                method: "POST",
-                headers: headers,
-                body: JSON.stringify(dataSchool),
-            })
-                .then(res => res.json())
-                .then((data) => {
-                    console.log('Success:', data);
-                    toast("Successfully added!");
-                    getMataKuliahs()
-                    setLoading(false)
-                    setVisible(!visible)
-                })
-                .catch((err) => {
-                    console.error('Error:', err);
-                    setLoading(false)
-                });
+        const dataSchool = {
+            nama: inputs.nama,
+            programStudi: { id: Number(inputs.programStudi) },
+            jenisMatkul: { id: Number(inputs.jenisMatkul) },
+            kode: inputs.kode,
+            bobotPratikum: inputs.bobotPratikum,
+            bobotSimulasi: inputs.bobotSimulasi,
+            bobotTatapMuka: inputs.bobotTatapMuka,
+            bobotPraktekLapangan: inputs.bobotPraktekLapangan,
+            metode: inputs.metode,
+            tglMulaiEfektif: inputs.tglMulaiEfektif,
+            tglAkhirEfektif: inputs.tglAkhirEfektif
         }
+
+        const host = `${url}/v1/mata-kuliah/save`
+        await fetch(host, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(dataSchool),
+        })
+            .then(res => res.json())
+            .then((data) => {
+                console.log('Success:', data);
+                toast("Successfully added!");
+                getMataKuliahs()
+                setLoading(false)
+                setVisible(!visible)
+            })
+            .catch((err) => {
+                console.error('Error:', err);
+                setLoading(false)
+            });
     }
     const editSchool = async () => {
         setLoading(true)
         const dataSchool = {
             id: inputs.id,
             nama: inputs.nama,
-            wilayah: inputs.wilayah,
+            programStudi: { id: Number(inputs.programStudi) },
+            jenisMatkul: { id: Number(inputs.jenisMatkul) },
+            kode: inputs.kode,
+            bobotPratikum: inputs.bobotPratikum,
+            bobotSimulasi: inputs.bobotSimulasi,
+            bobotTatapMuka: inputs.bobotTatapMuka,
+            bobotPraktekLapangan: inputs.bobotPraktekLapangan,
+            metode: inputs.metode,
+            tglMulaiEfektif: inputs.tglMulaiEfektif,
+            tglAkhirEfektif: inputs.tglAkhirEfektif
         }
 
         const host = `${url}/v1/mata-kuliah/update`
@@ -382,45 +445,161 @@ export default function MataKuliah() {
                         )}
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="wilayah" className="form-label">Wilayah</label>
+                        <label htmlFor="kode" className="form-label">Kode</label>
                         <input
                             type="text"
-                            className="form-control"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
+                            id="kode"
+                            name="kode"
+                            value={inputs.kode || ""}
                             onChange={handleChange}
-                            placeholder="Input Wilayah"
+                            placeholder="Input Kode"
+                            className={`form-control ${errors.kode ? "is-invalid" : ""}`}
                         />
-                        {errors.wilayah ? (
+                        {errors.kode ? (
                             <div className="invalid-feedback">
-                                Masukan Wilayah.
+                                Masukan kode.
                             </div>
                         ) : (
                             ""
                         )}
-                        {/* <select
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="programStudi" className="form-label">Program Studi</label>
+                        <select
                             type="text"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
+                            id="prodi"
+                            name="programStudi"
+                            value={inputs.programStudi || ""}
                             onChange={handleChange}
-                            className={`form-select ${errors.wilayah ? "is-invalid" : ""}`}
-                            >
-                                <option value="">Select...</option>
-                                {regions.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                            className={`form-select ${errors.programStudi ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {prodis.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
-                                ))}
-                            </select>
-                            {errors.wilayah ? (
-                               <div className="invalid-feedback">
-                                     Pilih kecamatan.
-                                </div>
-                            ) : (
-                                ""
-                            )} */}
+                            ))}
+                        </select>
+                        {errors.programStudi ? (
+                            <div className="invalid-feedback">
+                                Pilih program studi.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="jenisMatkul" className="form-label">Jenis Mata Kuliah</label>
+                        <select
+                            type="text"
+                            id="jenisMatkul"
+                            name="jenisMatkul"
+                            value={inputs.jenisMatkul || ""}
+                            onChange={handleChange}
+                            className={`form-select ${errors.jenisMatkul ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {jenisMatkuls.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.jenisMatkul ? (
+                            <div className="invalid-feedback">
+                                Pilih Jenis Mata Kuliah.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotPratikum" className="form-label">Bobot Praktikum</label>
+                        <input
+                            type="text"
+                            id="bobotPratikum"
+                            name="bobotPratikum"
+                            value={inputs.bobotPratikum || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Praktikum"
+                            className={`form-control ${errors.bobotPratikum ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotPratikum ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Praktikum.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotSimulasi" className="form-label">Bobot Simulasi</label>
+                        <input
+                            type="text"
+                            id="bobotSimulasi"
+                            name="bobotSimulasi"
+                            value={inputs.bobotSimulasi || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Simulasi"
+                            className={`form-control ${errors.bobotSimulasi ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotSimulasi ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Simulasi.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotTatapMuka" className="form-label">Bobot Tatap Muka</label>
+                        <input
+                            type="text"
+                            id="bobotTatapMuka"
+                            name="bobotTatapMuka"
+                            value={inputs.bobotTatapMuka || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot TatapMuka"
+                            className={`form-control ${errors.bobotTatapMuka ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotTatapMuka ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Tatap Muka.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotPraktekLapangan" className="form-label">Bobot Praktek Lapangan</label>
+                        <input
+                            type="text"
+                            id="bobotPraktekLapangan"
+                            name="bobotPraktekLapangan"
+                            value={inputs.bobotPraktekLapangan || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Praktek Lapangan"
+                            className={`form-control ${errors.bobotPraktekLapangan ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotPraktekLapangan ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Praktek Lapangan.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <div className="row">
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Mulai Efektif</label>
+                                <DatePicker className="px-2" selected={startDate} dateFormat={'dd/MM/yy'} onChange={(date) => setStartDate(date)} />
+                            </div>
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Akhir Efektif</label>
+                                <DatePicker className="px-2" selected={endDate} dateFormat={'dd/MM/yy'} onChange={(date) => setEndDate(date)} />
+                            </div>
+                        </div>
                     </div>
                 </CModalBody>
                 <CModalFooter>
@@ -443,42 +622,181 @@ export default function MataKuliah() {
                     <CModalTitle>Edit data</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
-                    <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Nama Sekolah</label>
+                <div className="mb-3">
+                        <label htmlFor="nama" className="form-label">Nama</label>
                         <input
                             type="text"
-                            className="form-control"
                             id="nama"
                             name="nama"
                             value={inputs.nama || ""}
                             onChange={handleChange}
+                            placeholder="Input Nama"
+                            className={`form-control ${errors.nama ? "is-invalid" : ""}`}
                         />
+                        {errors.nama ? (
+                            <div className="invalid-feedback">
+                                Masukan nama.
+                            </div>
+                        ) : (
+                            ""
+                        )}
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="wilayah" className="form-label">Wilayah</label>
+                        <label htmlFor="kode" className="form-label">Kode</label>
                         <input
                             type="text"
-                            className="form-control"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
+                            id="kode"
+                            name="kode"
+                            value={inputs.kode || ""}
                             onChange={handleChange}
+                            placeholder="Input Kode"
+                            className={`form-control ${errors.kode ? "is-invalid" : ""}`}
                         />
-                        {/* <select
+                        {errors.kode ? (
+                            <div className="invalid-feedback">
+                                Masukan kode.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="programStudi" className="form-label">Program Studi</label>
+                        <select
                             type="text"
-                            className="form-select"
-                            id="wilayah"
-                            name="wilayah"
-                            value={inputs.wilayah || ""}
+                            id="prodi"
+                            name="programStudi"
+                            value={inputs.programStudi || ""}
                             onChange={handleChange}
-                            >
-                             <option value="">Select...</option>
-                                {regions.content?.map((item, index) => (
-                                <option key={index} value={item.nama}>
+                            className={`form-select ${errors.programStudi ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {prodis.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
                                     {item.nama}
                                 </option>
-                                ))}
-                            </select> */}
+                            ))}
+                        </select>
+                        {errors.programStudi ? (
+                            <div className="invalid-feedback">
+                                Pilih program studi.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="jenisMatkul" className="form-label">Jenis Mata Kuliah</label>
+                        <select
+                            type="text"
+                            id="jenisMatkul"
+                            name="jenisMatkul"
+                            value={inputs.jenisMatkul || ""}
+                            onChange={handleChange}
+                            className={`form-select ${errors.jenisMatkul ? "is-invalid" : ""}`}
+                        >
+                            <option value="">Select...</option>
+                            {jenisMatkuls.content?.map((item, index) => (
+                                <option key={index} value={item.id}>
+                                    {item.nama}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.jenisMatkul ? (
+                            <div className="invalid-feedback">
+                                Pilih Jenis Mata Kuliah.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotPratikum" className="form-label">Bobot Praktikum</label>
+                        <input
+                            type="text"
+                            id="bobotPratikum"
+                            name="bobotPratikum"
+                            value={inputs.bobotPratikum || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Praktikum"
+                            className={`form-control ${errors.bobotPratikum ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotPratikum ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Praktikum.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotSimulasi" className="form-label">Bobot Simulasi</label>
+                        <input
+                            type="text"
+                            id="bobotSimulasi"
+                            name="bobotSimulasi"
+                            value={inputs.bobotSimulasi || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Simulasi"
+                            className={`form-control ${errors.bobotSimulasi ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotSimulasi ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Simulasi.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotTatapMuka" className="form-label">Bobot Tatap Muka</label>
+                        <input
+                            type="text"
+                            id="bobotTatapMuka"
+                            name="bobotTatapMuka"
+                            value={inputs.bobotTatapMuka || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot TatapMuka"
+                            className={`form-control ${errors.bobotTatapMuka ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotTatapMuka ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Tatap Muka.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="bobotPraktekLapangan" className="form-label">Bobot Praktek Lapangan</label>
+                        <input
+                            type="text"
+                            id="bobotPraktekLapangan"
+                            name="bobotPraktekLapangan"
+                            value={inputs.bobotPraktekLapangan || ""}
+                            onChange={handleChange}
+                            placeholder="Input Bobot Praktek Lapangan"
+                            className={`form-control ${errors.bobotPraktekLapangan ? "is-invalid" : ""}`}
+                        />
+                        {errors.bobotPraktekLapangan ? (
+                            <div className="invalid-feedback">
+                                Masukan Bobot Praktek Lapangan.
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                    <div className="mb-3">
+                        <div className="row">
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Mulai Efektif</label>
+                                <DatePicker className="px-2" selected={startDate} dateFormat={'dd/MM/yy'} onChange={(date) => setStartDate(date)} />
+                            </div>
+                            <div className="col-md-6 col-sm-12">
+                                <label htmlFor="mode" className="form-label">Tanggal Akhir Efektif</label>
+                                <DatePicker className="px-2" selected={endDate} dateFormat={'dd/MM/yy'} onChange={(date) => setEndDate(date)} />
+                            </div>
+                        </div>
                     </div>
                 </CModalBody>
                 <CModalFooter>
@@ -508,7 +826,7 @@ export default function MataKuliah() {
                         <label htmlFor="nama" className="form-label">Nama Mata Kuliah : {selectedDetail?.nama}</label>
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="nama" className="form-label">Bobot : {selectedDetail?.bobotMatkul}</label>
+                        <label htmlFor="nama" className="form-label">Bobot Mata Kuliah : {selectedDetail?.bobotMatkul} sks</label>
                     </div>
                     <div className="mb-3">
                         <label htmlFor="nama" className="form-label">Program Studi : {selectedDetail.programStudi?.nama}</label>
